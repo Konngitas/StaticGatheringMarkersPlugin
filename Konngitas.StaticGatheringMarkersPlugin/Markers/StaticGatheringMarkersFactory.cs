@@ -141,11 +141,6 @@ internal class GatheringNodeMarkerFactory(
             return;
         }
 
-        foreach (var (baseRow, point) in gatheringPointsForZone)
-        {
-            Logger.Info($"Base: {baseRow}, Actual:{point.RowId}");
-        }
-
         Dictionary<uint, Coords> coordsForPoints = coords.Where(c => gatheringPointsForZone.ContainsKey(c.RowId)).ToDictionary(c => c.RowId, c => new Coords
         {
             X = c.X,
