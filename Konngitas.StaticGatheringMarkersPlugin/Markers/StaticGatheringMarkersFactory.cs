@@ -146,8 +146,6 @@ internal class GatheringNodeMarkerFactory(
             X = c.X,
             Y = c.Y
         });
-        Logger.Info($"Loaded {gatheringPointsForZone.Count} gathering points for zone {zone.Name} - {zone.TerritoryId}");
-        Logger.Info($"Loaded {coordsForPoints.Count} coordinates for zone {zone.Name} - {zone.TerritoryId}");
 
         foreach ((uint row, GatheringPointBase point) in gatheringPointsForZone)
         {
