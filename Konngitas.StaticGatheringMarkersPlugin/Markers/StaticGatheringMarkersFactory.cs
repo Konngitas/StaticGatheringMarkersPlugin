@@ -1,5 +1,5 @@
 using Dalamud.Plugin.Services;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Linq;
 using Umbra.Common;
@@ -74,6 +74,7 @@ internal class GatheringNodeMarkerFactory(
         };
 
         var filterNodes = !GetConfigValue<bool>("ShowMarkersForCurrentClass");
+        var maxVisDistance = GetConfigValue<int>("MaxVisibleDistance");
 
         var filteredNodes = job != null && filterNodes? _gatheringNodes.Where(node => node.Job != job) : _gatheringNodes;
 
@@ -93,7 +94,8 @@ internal class GatheringNodeMarkerFactory(
                     Label = node.Label,
                     SubLabel = showCtns ? (node.Items.Count > 0 ? $"{node.Items[_displayIndex % node.Items.Count]}" : null) : null,
                     ShowOnCompass = node.ShowDirection && GetConfigValue<bool>("ShowOnCompass"),
-                    FadeDistance = new(fadeDist, fadeDist + fadeAttn)
+                    FadeDistance = new(fadeDist, fadeDist + fadeAttn),
+                    MaxVisibleDistance = maxVisDistance
                 }
             );
         }
@@ -104,8 +106,8 @@ internal class GatheringNodeMarkerFactory(
     {
         //Quest 74 marks skybuilders stuff.
         //TerritoryType 939, 929, 901 is the most recent, and old versions of diadem
-        var territoryType = gp.TerritoryType.Row;
-        return gp.GatheringSubCategory?.Value?.Quest.Row == 74 && ( territoryType != 939 || territoryType != 929 || territoryType != 901);
+        var territoryType = gp.TerritoryType.RowId;
+        return gp.GatheringSubCategory.ValueNullable?.Quest.RowId == 74 && ( territoryType != 939 || territoryType != 929 || territoryType != 901);
     }
   
 
@@ -127,7 +129,7 @@ internal class GatheringNodeMarkerFactory(
         _gatheringNodes.Clear();
 
 
-        Dictionary<uint, GatheringPointBase>? gatheringPointsForZone = dataManager.GetExcelSheet<GatheringPoint>()?.Where(gp => gp.TerritoryType.Row == zone.TerritoryId && !IsDeprecated(gp))?.Select(gp => gp.GatheringPointBase.Value!)
+        Dictionary<uint, GatheringPointBase>? gatheringPointsForZone = dataManager.GetExcelSheet<GatheringPoint>()?.Where(gp => gp.TerritoryType.RowId == zone.TerritoryId && !IsDeprecated(gp))?.Select(gp => gp.GatheringPointBase.Value!)
             .Distinct()
             .ToDictionary(gp => gp.RowId);
  
@@ -162,13 +164,13 @@ internal class GatheringNodeMarkerFactory(
             .Item.Select(
                 i =>
                 {
-                    if (i == 0) return null;
+                    if (i.RowId == 0) return null;
 
-                    var gItem = dataManager.GetExcelSheet<GatheringItem>()!.GetRow((uint)i);
+                    var gItem = dataManager.GetExcelSheet<GatheringItem>()!.GetRowOrDefault(i.RowId);
 
                     return gItem == null
                         ? null
-                        : dataManager.GetExcelSheet<Item>()!.GetRow((uint)gItem.Item)?.Name.ToString();
+                        : dataManager.GetExcelSheet<Item>()!.GetRowOrDefault((uint)gItem.Value.Item.RowId)?.Name.ToString();
                 }
             )
             .Where(i => i != null)
@@ -178,11 +180,11 @@ internal class GatheringNodeMarkerFactory(
         {
             Key = $"GN_{coords.X:N0}_{coords.Y:N0}",
             Coordinates = coords,
-            IconId = (uint)(point.GatheringType.Value?.IconMain ?? 0),
+            IconId = (uint)(point.GatheringType.ValueNullable?.IconMain ?? 0),
             Label = $"Lv.{point.GatheringLevel} Gathering Point",
             Items = items,
-            ShowDirection = !(!player.IsDiving && point.GatheringType.Row == 5),
-            Job = JobIdToJob(point.GatheringType.Row)
+            ShowDirection = !(!player.IsDiving && point.GatheringType.RowId == 5),
+            Job = JobIdToJob(point.GatheringType.RowId)
         };
     }
 

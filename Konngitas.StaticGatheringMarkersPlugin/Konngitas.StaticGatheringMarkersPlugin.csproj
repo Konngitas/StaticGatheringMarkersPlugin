@@ -23,7 +23,7 @@
 
     <PropertyGroup>
         <Authors>Konngitas</Authors>
-        <Version>1.0.0.0</Version>
+        <Version>1.1.0.0</Version>
         <Description>Shows world markers for gathering nodes when not DoL</Description>
         <Copyright>(C)2024</Copyright>
         <PackageProjectUrl>https://github.com/Konngitas/StaticGatheringMarkersPlugin</PackageProjectUrl>
